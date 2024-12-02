@@ -106,7 +106,8 @@ class ViewProfile(APIView):
               
         if new_avatar == None and new_pseudo == None:
             return Response({"success": False, "data": {}, "message": 'Nothing was updated. Patchable parameters are "author_pseudo" and "avatar"'})
-            
+        
+        profile.save()
         return Response({"success": True, "data": {"profile": ProfileSerializer(profile).data}, "message": 'Profile updated successfully. ' + msg})
    
 #Delete Account

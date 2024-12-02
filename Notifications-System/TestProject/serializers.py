@@ -12,4 +12,4 @@ class CustomDateTimeField(serializers.DateTimeField):
         days = floor(hours / 24)
         years = floor(days / 365)
         
-        return f'{years} year(s) ago' if years > 0 else f'{days} day(s) ago' if days > 0 else f'{hours} hour(s) ago' if hours > 0 else f'{minutes} minute(s) ago' if minutes > 0 else 'Just now'
+        return f'{years} рік(років) тому' if years > 0 else f'{days} день(днів) тому' if days > 0 else f'{hours} годин(у) тому' if hours > 0 else f'{minutes} хвилин(у) тому' if minutes > 0 else 'Щойно'

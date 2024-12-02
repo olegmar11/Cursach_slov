@@ -28,7 +28,7 @@ MEDIA_URL = '/api/media/'
 SECRET_KEY = 'django-insecure-he-==hmb=qmcpnfh#b9w(+@g6t5pzues$5-b_8sa3&1l0k7vv3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'notifications-system.fly.dev',

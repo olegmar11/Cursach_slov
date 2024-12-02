@@ -1,0 +1,39 @@
+@use "../variables";
+
+.badge {
+    transition: variables.$transition-shorter filter;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(85%);
+
+        .badgeLabel {
+            .badgeValue {
+                opacity: 0;
+            }
+
+            .badgeX {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.badgeLabel {
+    position: relative;
+}
+
+.badgeValue {
+    opacity: 1;
+    transition: variables.$transition-shorter opacity;
+}
+
+.badgeX {
+    position: absolute;
+    top: 0;
+    right: 50%;
+    transform: translateX(50%);
+
+    opacity: 0;
+    transition: variables.$transition-shorter opacity;
+}

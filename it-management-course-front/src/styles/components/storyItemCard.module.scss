@@ -1,0 +1,18 @@
+@use "../variables";
+
+.item {
+    cursor: pointer;
+    opacity: 1;
+    transition:
+        variables.$transition-short opacity,
+        variables.$transition-short transform;
+
+    &.fetching {
+        opacity: 0.5;
+    }
+
+    &:hover {
+        opacity: 0.83;
+        transform: scale(1.02);
+    }
+}

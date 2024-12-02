@@ -1,0 +1,15 @@
+.like {
+    cursor: pointer;
+
+    &:hover {
+        fill: #31c40c;
+    }
+}
+
+.dislike {
+    cursor: pointer;
+
+    &:hover {
+        fill: red;
+    }
+}

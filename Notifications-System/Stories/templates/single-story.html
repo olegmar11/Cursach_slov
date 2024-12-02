@@ -1,0 +1,773 @@
+{% extends "header.html" %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    {% block content %}
+    <style>
+        .comment-buttons {
+            text-align: center; 
+            margin-right: 10px;
+            margin-top: 0;
+            margin-bottom: 0;
+            border: none;
+            background-color: lightblue;
+            cursor: pointer;
+            transition: 0.8s;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .comment-buttons:hover {
+            background-color: lightsalmon;
+            transition: background-color 0.3s;
+        }
+
+        .user-link {
+            text-decoration: none;
+            color: black;
+            background-color: lightsalmon;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .user-link:hover {
+            transition: 0.3s;
+            color: black;
+            background-color: lightblue;
+        }
+        .interactions-buttons-wrapper {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .interactions-buttons-wrapper button{
+            width: min;
+        }
+        
+    </style>
+        <input type="hidden" id="story_id" value="{{context}}">
+        <input type="hidden" id="author_id" value="">
+
+        <div class="story-content-wrapper" style="display: flex; flex-direction: column; align-items: top; justify-content: center; width: 50vw; margin: auto;">
+            <div class="story-info-header-wrapper" style="display: flex; flex-direction: column;">
+                <h1 style="font-size: 50px; font-family: Verdana, Geneva, Tahoma, sans-serif; margin-bottom: 0;" id="story_title"></h1>
+                <h3 style="font-size: 25px;" >by <a href="" id="author_profile"></a></h3>
+                <p id="date_field"></p>
+                <div class="interactions-buttons-wrapper">
+                    <button style="width: max-content; display: none; margin-top: 2em;" id="subscribe"></button>
+                    <button style="width: max-content; display: none; margin-top: 2em; margin-left: 2em;" id="get_notified"></button>
+                </div>
+   
+            </div>
+            <div class="story-wrapper" style="display: flex; width: 100%; align-items: center; justify-content: center; flex-direction: column; margin-bottom: 5vh;  margin-top: 5vh;">
+                
+                <div class="story-text-container" style="display: block; border: 1px solid rgba(0, 0, 0, 0.2); width: 30vw;  padding: 5px; height: 80vh; border-radius: 10px;">
+                    <p style="font-size: 1.3rem; padding: 5px;" id="story_body"></p>
+                </div>
+
+                <div class="sotry-reactions-info" style="display: flex; flex-direction: row; align-items: center; margin-top: 0.5em;" >
+                    <button class="reactions-buttons" style="font-size: 1.3rem; padding: 10px; margin-right: 0.5rem;" id="like_story"></button>
+                    <button class="reactions-buttons" style="font-size: 1.3rem; padding: 10px; margin-left: 0.5rem;" id="dislike_story"></button>
+                </div>
+
+            </div>
+        </div>
+        <div class="story-page-bottom-wrapper" style="display: flex; flex-direction: row; width: 80%; margin: auto; justify-content: center; text-align: left;" >
+            
+            <div class="comments-wrapper" style="display: flex; justify-content: left; flex-direction: column; width: 50%; margin-right: 1rem;" id="observable">
+                <h3 style="text-align: left; font-size: 2rem;" id="comment_count"></h3>
+                <div class="comment-form-wrapper" style="display: flex; justify-content: left; align-items: center;">
+                    {% if request.user.is_authenticated %}
+                    <form method="post" action="http://127.0.0.1:8000/comments/comments" style="display: flex; flex-direction: column; width: 500px; justify-content: left; align-items: center; height: 6em; margin-top: 2vh; flex-direction: column;">
+                        {% csrf_token %}
+                        <input placeholder="Here goes your comment body" name='comment_body' style="width: 100%; height: 5em; border: none; border-bottom: solid 1px grey;" required>
+                        <input type="hidden" name="post_id" value="{{ context }}">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button class="submit-button" type="submit" style="width: 100%; margin-top: 0.5em; padding: 5px;">Create Comment</button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <div class="comment-section-wrapper" style="display: flex; position: relative; flex-direction: row; justify-content: left; width: 100%;">          
+                    <div class="comments-box-wrapper" id="comment_boxes"  style="display: flex; flex-direction: column; flex-wrap: wrap; justify-content: left; width: 100%; margin-top: 2em;">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="recommendations-wrapper" style="display: flex; justify-content: left; flex-direction: column; width: 50%; margin-left: 1rem;">
+                <h3 style="text-align: center; font-size: 2rem;">You might also like</h3>
+                <div class="recommendations" style="display: flex; width: 100%; flex-direction: column; align-items: center;">
+                    <div class="recommendation-boxes-wrapper" style="display: block; position: relative; justify-content: center; align-items: top; border: solid 1px rgba(0, 0, 0, 0.2); width: 80%; height: 100vh;">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="reply-form-wrapper" style="display: none; justify-content: left; align-items: center;">
+            <form method="post" action="http://127.0.0.1:8000/comments/comments" style="display: flex; flex-direction: column; width: 500px; justify-content: left; align-items: center; height: 6em; margin-top: 2vh; flex-direction: column;">
+                {% csrf_token %}
+                <input placeholder="Here goes your reply body" name='comment_body' style="width: 100%; height: 5em; border: none; border-bottom: solid 1px grey;">
+                <input type="hidden" name="post_id" id="post_id" value="">
+                <input type="hidden" name="parent_id" id="parent_id" value="">
+                <input type="hidden" name="real_parent_id" id="real_parent_id" value="">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button class="submit-button" type="submit" style="width: 100%; margin-top: 0.5em; padding: 5px;">Reply</button>
+            </form>
+        </div>    
+
+        <div class="reply-reply-form-wrapper" style="display: none; justify-content: left; align-items: center; margin-top: 0.5em; margin-bottom: 1em;">
+            <form method="post" action="http://127.0.0.1:8000/comments/comments" style="display: flex; flex-direction: column; width: 100%; justify-content: left; align-items: center; height: 6em; margin-top: 2vh; flex-direction: column;">
+                {% csrf_token %}
+                <input placeholder="Here goes your reply body" name='comment_body' style="width: 100%; height: 5em; border: none; border-bottom: solid 1px grey;" onkeydown="handleKeyDown(event)"">
+                <input type="hidden" name="post_id" value="">
+                <input type="hidden" name="parent_id" id="parent_id" value="">
+                <input type="hidden" name="user_to_notify" id="user_id" value="">
+                <input type="hidden" name="real_parent_id" id="real_parent_id" value="">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button class="submit-button" type="submit" style="width: 100%; margin-top: 0.5em; padding: 5px;">Reply</button>
+            </form>
+        </div>    
+
+        <script>
+            const MAINURL = 'http://127.0.0.1:8000';
+            window.addEventListener('DOMContentLoaded', fetchStory());
+            var subscribe = document.getElementById('subscribe');
+            var get_notif = document.getElementById('get_notified');
+            var forms_replies = document.getElementsByClassName('reply-reply-form-wrapper');
+            var forms_comments = document.getElementsByClassName('reply-form-wrapper');
+            
+            try {
+                var user_information = JSON.parse(sessionStorage.getItem('user'));
+            }
+            catch (error) {
+                var user_information = null;
+            }
+
+            function fetchStory() {
+                var story_id = document.getElementById('story_id');
+                var story_title = document.getElementById('story_title');
+                var author_profile = document.getElementById('author_profile');
+                var datefield = document.getElementById('date_field');
+                var comment_cnt = document.getElementById('comment_count');
+                var story_body = document.getElementById('story_body');
+                var likes_cnt = document.getElementById('like_story');
+                var dislikes_cnt = document.getElementById('dislike_story');
+                var author_id = document.getElementById('author_id');
+                var url = `${MAINURL}/get_distinct_story?story=${story_id.value}`;
+
+                fetch(url, {
+                    method: "GET",
+                    headers:{
+                        'Content-Type':'application/json',
+                    },
+                }).then(response => {
+                    return response.json()
+
+                }).then(response => {
+                    console.log(response);
+                    cleaned_data = response.data;
+                    // SUB BUTTON
+                    if (user_information) {
+                        if (!cleaned_data.owner & cleaned_data.subscribed) {
+                            subscribe.style.display = 'block';
+                            subscribe.innerHTML = 'Unsubscribe';
+                            
+                            if (cleaned_data.get_notif == true) {
+                                get_notif.style.display = 'block';
+                                get_notif.innerHTML = 'Do Not Receive Notifications';
+                            }
+                            else if (cleaned_data.get_notif == false) {
+                                get_notif.style.display = 'block';
+                                get_notif.innerHTML = 'Receive Notifications';
+                            }
+                        }
+                        else if (!cleaned_data.owner & !cleaned_data.subscribed) {
+                            subscribe.style.display = 'block';
+                            subscribe.innerHTML = 'Subscribe';
+                        }
+                        
+                    }
+
+                    story_title.textContent = cleaned_data.story.title;
+                    author_id.value = cleaned_data.story.creator.id;
+                    author_profile.href = `${MAINURL}/user/view_profile?user=${cleaned_data.story.creator.id}`;
+                    author_profile.innerHTML = `${cleaned_data.story.creator.writer_pseudo}`;
+
+                    datefield.textContent = `Published ${cleaned_data.story.created_at} and ${cleaned_data.story.views_counter} people read this`;
+                    comment_cnt.textContent = `${cleaned_data.story.comments_count} Comments`;
+                    story_body.textContent = cleaned_data.story.body;
+                    likes_cnt.innerHTML = `Likes: ${cleaned_data.story.likes_count}`;
+                    dislikes_cnt.innerHTML = `Dislikes: ${cleaned_data.story.dislikes_count}`;
+                })
+            }
+
+
+            if (user_information)
+                subscribe.addEventListener('click', function() {
+                    subscribe.disabled = 'true';
+                    var author = document.getElementById('author_id');
+
+                    var url = `${MAINURL}/user/subscribe_to`;
+
+                    fetch(url, {
+                        method: "POST",
+                        headers:{
+                            'Content-Type':'application/json',
+                            'X-CSRFToken': token.value,
+                        },
+                        body: JSON.stringify({'author_id': author.value}),
+
+                    }).then(response => {
+                        return response.json()
+                    }).then(response => {
+                        if (response.action == true) {
+                            subscribe.innerHTML = 'Unsubscribe';
+                            get_notif.style.display = 'block';
+                            get_notif.innerHTML = 'Do Not Receive Notifications';
+                        }
+                        else {
+                            subscribe.innerHTML = 'Subscribe';
+                            get_notif.style.display = 'none';
+                        }
+                        subscribe.disabled = false;
+                    })
+                })
+
+            if (user_information) {
+                get_notif.addEventListener('click', function() {
+                    get_notif.disabled = true;
+                    var author = document.getElementById('author_id');
+
+                    var url = `${MAINURL}/user/note_unnote`;
+
+                    fetch(url, {
+                        method: "POST",
+                        headers:{
+                            'Content-Type':'application/json',
+                            'X-CSRFToken': token.value,
+                        },
+                        body: JSON.stringify({'author_id': author.value}),
+
+                    }).then(response => {
+                        return response.json()
+                    }).then(response => {
+                        if (response.action == false){
+                            get_notif.innerHTML = "Receive Notifications";
+                        }
+                        else {
+                            get_notif.innerHTML = "Do Not Receive Notifications";
+                        }
+                        get_notif.disabled = false;
+                    })
+                })
+            }
+
+
+
+            const targetElement = document.getElementById('observable');
+            const options = {
+                root: null, // Use the viewport as the root
+                rootMargin: '0px', // No margin around the viewport
+                threshold: 0.1 // Trigger when at least half of the element is visible
+            };
+            const callback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    observer.unobserve(entry.target);
+                    ViewComments()
+                }
+            });
+            };
+            const observer_form = new IntersectionObserver(callback, options);
+            observer_form.observe(targetElement);
+
+            comment_pages_info = null;
+            story_info = null;
+            replies_pages_info = null;
+                
+            function LikeDislikeComment(comment_id, type, index, ctype = 'comment') {
+                let url = `${MAINURL}/comments/likeunlike`
+                let token = document.getElementById('token');
+                
+                if (user_information) {
+                    fetch(url, {
+                        method: "POST",
+                        headers:{
+                            'Content-Type':'application/json',
+                            'X-CSRFToken': token.value,
+                        },
+                        body: JSON.stringify({'comment_id': comment_id, 'type': type}) 
+                    }).then(response => {
+                        return response.json()
+        
+                    }).then(response => {
+                        let cleaned_data = response.data;
+                        if (ctype == 'comment'){ 
+                            var comment = document.getElementsByClassName('buttons-wrapper');
+                        }
+                        else {
+                            var comment = document.getElementsByClassName('reply-buttons-wrapper');
+                        }
+                        let fields = comment[index].childNodes;
+        
+                        for (let i = 0; i < fields.length; i++) {
+                            if (fields[i].className.includes('dislike')){
+                                fields[i].textContent = `Dislikes: ${cleaned_data.dislikes_count}`
+                            }
+                            else if (fields[i].className.includes('like')){
+                                fields[i].textContent = `Likes: ${cleaned_data.likes_count}`
+                            }
+                            if (fields[i].className.includes('enabled') || fields[i].className.includes('disabled')){
+                                fields[i].textContent = `Replies: ${cleaned_data.replies_count}`
+                            }
+                        }
+                    })
+                } else {
+                    buildModal("You must log in in order to like comments");
+                }
+            }
+    
+            function ViewReplyForm(k, replies_box = null) {
+                if (replies_box) {
+                    var form_to_choose = document.getElementsByClassName('reply-reply-form-wrapper');
+                }
+                else {
+                    var form_to_choose = document.getElementsByClassName('reply-form-wrapper');
+                    let replies = document.getElementsByClassName('replies-wrapper');
+                    replies[k].style.display = "none";
+                }
+                
+                var true_style = window.getComputedStyle(form_to_choose[k], null).display;
+
+                for (let i = 0; i < form_to_choose.length; i++) {
+                    form_to_choose[i].style.display = "none";
+                }
+
+
+                if (true_style == "none" || true_style == null){
+                    form_to_choose[k].style.display = "flex";
+                } 
+                else {
+                    form_to_choose[k].style.display = "none";
+                } 
+            }
+        
+            function ViewReplies(comment_id, j, replies_box = null) {
+                let forms = document.getElementsByClassName('reply-form-wrapper');
+                let replies = document.getElementsByClassName('replies-wrapper');
+                let to_be_tracked = document.getElementsByClassName('replies');
+                
+    
+                for (let i = 0; i < replies.length; i++) {
+                    if (i != j) {
+                        replies[i].style.display = "none";
+                    }
+                    forms[i].style.display = "none";
+                }
+        
+                if (replies[j].style.display == "none") {
+                    replies[j].style.display = "flex";
+                }
+                else {
+                    replies[j].style.display = "none";
+                }
+
+                if(replies[j].style.display == "flex") {
+                    if (to_be_tracked[j].childNodes.length == 0) {
+                        fetchReplies(comment_id, j, 1);
+                    }
+                }
+                
+    
+            }
+    
+            function fetchReplies(comment_id, j, page) {
+    
+                fetch(`${MAINURL}/comments/replies?parent=${comment_id}&page=${page}`, {
+                    method:'GET',
+                    headers:{
+                        'Content-Type':'application/json',
+                    }
+        
+                })
+                .then(response => {
+                        return response.json()
+                })
+                .then(response => {
+                    replies_pages_info = response.data.page
+                    CreateRepliesCards(response.data.replies, j, comment_id)
+                });
+                
+            }
+    
+            function CreateRepliesCards(data, j, comment_id) {
+
+                cleaned_data = data;
+                console.log(data);
+                var forms = document.getElementsByClassName('reply-reply-form-wrapper');
+
+                var get_post_id = document.getElementById('story_id');
+                for (let i = 0; i < cleaned_data.length; i++){
+                    var comment_body = document.createElement("div");
+                    comment_body.className = "reply-comment-box";
+                    comment_body.style.padding = "5px";
+                    comment_body.style.paddingBottom = "0px";
+                    comment_body.style.borderBottom = "solid 1px lightgrey";
+                    comment_body.style.width = "100%";
+                    comment_body.style.textAlign = "left";
+        
+                    var comment_creator = document.createElement("h3");
+                    if (data[i].is_writer){
+                        comment_creator.innerHTML = `by <a href="${MAINURL}/user/view_profile?user=${data[i].creator_id}">${data[i].creator}</a>    ${data[i].created_at}`;
+                    } else {
+                        comment_creator.innerHTML = `by ${data[i].creator}`;
+                    }
+
+                    comment_creator.className = 'comment-creator-title';
+        
+                    var comment_text = document.createElement("p");
+                    comment_text.innerHTML = cleaned_data[i].comment_body;
+                    comment_text.className = 'reply-comment-data';
+                    
+                    comment_body.appendChild(comment_creator);
+                    
+
+                    var like_button = document.createElement('p');
+                    like_button.textContent = `Likes: ${data[i].likes_count}`;
+                    var dislike_button = document.createElement('p');
+                    dislike_button.textContent = `Dislikes: ${data[i].dislikes_count}`;
+    
+                    // info_wrapper.appendChild(likes_count);
+                    // info_wrapper.appendChild(dislikes_count);
+                    // info_wrapper.appendChild(replies_count);
+    
+                    var buttons_wrapper = document.createElement('div');
+                    buttons_wrapper.className = 'reply-buttons-wrapper';
+    
+                    var view_reply_form_button = document.createElement('p');
+                    view_reply_form_button.className = 'reply-reply';
+                    view_reply_form_button.innerHTML = "Reply";
+    
+                    view_reply_form_button.addEventListener('click', function() { 
+                        ViewReplyForm(i, replies_bound_box[j]) 
+                    })
+    
+                    // var like_button = document.createElement('button');
+                    like_button.className = 'reply-like';
+                    
+    
+                    // var dislike_button = document.createElement('button');
+                    dislike_button.className = 'reply-dislike';
+                    
+    
+                    
+                    buttons_wrapper.appendChild(like_button);
+                    buttons_wrapper.appendChild(dislike_button);
+                    buttons_wrapper.appendChild(view_reply_form_button);
+
+                    
+                    var form_wrapper = forms_replies[forms_replies.length - 1].cloneNode(true);
+                    form_to_modify = form_wrapper.getElementsByTagName('form');
+                    form_to_modify[0].action = '${MAINURL}/comments/replies';
+                    parent_id_field = form_to_modify[0].getElementsByTagName('input');
+                    
+                    for (let g = 0; g < parent_id_field.length; g++){
+                        if (parent_id_field[g].name == "parent_id"){
+                            parent_id_field[g].value = comment_id;
+                        }
+                        else if (parent_id_field[g].name == "post_id"){
+                            parent_id_field[g].value = get_post_id.value;
+                        }
+                        else if (parent_id_field[g].name == "user_to_notify"){
+                            parent_id_field[g].value = data[i].creator_id;
+                        }
+                        else if (parent_id_field[g].name == "real_parent_id"){
+                            parent_id_field[g].value = data[i].id;
+                        }
+                    }
+                    
+                    comment_body.appendChild(comment_text);
+                    comment_body.appendChild(buttons_wrapper);
+    
+                    comment_body.appendChild(form_wrapper);
+
+                    like_button.addEventListener('click', function() { 
+                        LikeDislikeComment(data[i].id, 'like', i, 'reply'); 
+                    })
+    
+                    dislike_button.addEventListener('click', function() { 
+                        LikeDislikeComment(data[i].id, 'dislike', i, 'reply'); 
+                    })
+
+                    replies_bound_box[j].appendChild(comment_body);
+                }
+                
+                var elements = document.getElementsByClassName('reply-comment-box');
+                var target = elements[elements.length - 1];
+    
+                var options = {
+                    root: null, // Use the viewport as the root
+                    rootMargin: '0px', // No margin around the viewport
+                    threshold: 0.5 // Trigger when at least half of the element is visible
+                };
+    
+                // Callback function to execute when the element intersects
+                var callback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting & replies_pages_info.has_next) {
+                        // Element is visible
+                        fetchReplies(comment_id, j, replies_pages_info.current + 1);
+                    }
+                });
+                };
+    
+                // Create an intersection observer instance
+                var observer = new IntersectionObserver(callback, options);
+    
+                // Start observing the target element
+                observer.observe(target);
+                    
+            }
+    
+            function ViewComments(page = 1){
+                try{
+                    var notification_comment_data = JSON.parse(sessionStorage.getItem('notification_comment_data'));
+                }
+                catch (error) {
+                    var notification_comment_data = null;
+                }
+                if (notification_comment_data) {
+                    required_id = notification_comment_data.comment;
+                }
+                else {
+                    required_id = null;
+                }
+
+                var story_id = document.getElementById('story_id');
+                var url = `${MAINURL}/comments/comments?page=${page}&story_id=${story_id.value}`;
+    
+                fetch(url, {
+                method: "GET",
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                })
+                .then(response => {
+                        return response.json()
+                })
+                .then(response => {
+                    comment_pages_info = response.data.page;
+                    CreateCommentCards(response.data.stories, required_id);
+                });
+            }
+        
+            function CreateCommentCards(data, highlight_id) {
+                var placeholder = document.getElementById('comment_boxes');
+                var get_post_id = document.getElementById('story_id'); 
+                
+                for (let j = 0; j < data.length; j++) {
+                    var comment_box = document.createElement('div');
+                    comment_box.className = 'comment-box';
+                    console.log(data[j])
+    
+                    if (data[j].id == highlight_id){
+                        comment_box.style.backgroundColor = 'lightsalmon';
+                        sessionStorage.removeItem('notification_comment_data');
+                    }
+
+                    var user_Link = document.createElement('h3');
+                    user_Link.className = 'comment-creator-title';
+    
+                    if (data[j].is_writer){
+                        user_Link.innerHTML = `by <a href="${MAINURL}/user/view_profile?user=${data[j].creator_id}">${data[j].creator}</a>    ${data[j].created_at}`;
+                    }
+                    else {
+                        user_Link.innerHTML = `by${data[j].creator}`;
+                    }
+    
+                    var comment_body = document.createElement('p');
+                    comment_body.className = 'comment-data';
+                    comment_body.textContent = data[j].comment_body;
+                    
+    
+                    var replies_count = document.createElement('p');
+                    replies_count.textContent = `Replies: ${data[j].replies_count}`;
+                    var like_button = document.createElement('p');
+                    like_button.textContent = `Likes: ${data[j].likes_count}`;
+                    var dislike_button = document.createElement('p');
+                    dislike_button.textContent = `Dislikes: ${data[j].dislikes_count}`;
+    
+                    // info_wrapper.appendChild(likes_count);
+                    // info_wrapper.appendChild(dislikes_count);
+                    // info_wrapper.appendChild(replies_count);
+    
+                    var buttons_wrapper = document.createElement('div');
+                    buttons_wrapper.className = 'buttons-wrapper';
+    
+                    var view_reply_form_button = document.createElement('p');
+                    view_reply_form_button.className = 'comment-buttons reply';
+                    view_reply_form_button.innerHTML = "Reply";
+    
+                    view_reply_form_button.addEventListener('click', function() { 
+                        ViewReplyForm(j) 
+                    })
+    
+                    // var like_button = document.createElement('button');
+                    like_button.className = 'comment-buttons like';
+                    
+    
+                    // var dislike_button = document.createElement('button');
+                    dislike_button.className = 'comment-buttons dislike';
+                    
+    
+                    
+                    buttons_wrapper.appendChild(like_button);
+                    buttons_wrapper.appendChild(dislike_button);
+                    buttons_wrapper.appendChild(replies_count);
+                    buttons_wrapper.appendChild(view_reply_form_button);
+    
+                    if (data[j].replies_count > 0) {
+                        replies_count.className = 'comment-buttons enabled';
+                        replies_count.addEventListener('click', function() { 
+                            ViewReplies(data[j].id, j) 
+                        })
+                    }
+                    else {
+                        replies_count.className = 'comment-buttons disabled';
+                    }
+    
+    
+                    var replies_wrapper = document.createElement('div');
+                    replies_wrapper.className = 'replies-wrapper';
+    
+                    var replies_container = document.createElement('div');
+                    replies_container.className = 'replies';
+                    
+                    var form_wrapper = forms_comments[forms_comments.length - 1].cloneNode(true);
+                    form_to_modify = form_wrapper.getElementsByTagName('form');
+                    form_to_modify[0].action = '${MAINURL}/comments/replies';
+                    parent_id_field = form_to_modify[0].getElementsByTagName('input');
+                    
+                    for (let i =0; i < parent_id_field.length; i++){
+                        if (parent_id_field[i].name == "parent_id"){
+                            parent_id_field[i].value = data[j].id
+                        }
+                        else if (parent_id_field[i].name == "post_id"){
+                            parent_id_field[i].value = get_post_id.value;
+                        }
+                        else if (parent_id_field[i].name == "real_parent_id"){
+                            parent_id_field[i].value = data[j].id;
+                        }
+                    }
+                    
+                    replies_wrapper.appendChild(replies_container);
+    
+    
+                    comment_box.appendChild(user_Link);
+                    comment_box.appendChild(comment_body);
+                    comment_box.appendChild(buttons_wrapper);
+    
+                    comment_box.appendChild(replies_wrapper);
+                    comment_box.appendChild(form_wrapper);
+    
+                    placeholder.appendChild(comment_box);
+    
+                    like_button.addEventListener('click', function() { 
+                        LikeDislikeComment(data[j].id, 'like', j) 
+                    })
+    
+                    dislike_button.addEventListener('click', function() { 
+                        LikeDislikeComment(data[j].id, 'dislike', j) 
+                    })
+                }
+    
+                forms = document.getElementsByClassName('reply-form-wrapper');
+                replies_bound_box = document.getElementsByClassName('replies') //builder box
+                viewReplies = document.getElementsByClassName('ViewReply')  //view replies button
+                makeReplies = document.getElementsByClassName('leaveReply')
+    
+                // OBSERVER
+                try {
+                    let comments = document.getElementsByClassName('comment-box');
+                    let target = comments[comments.length - 1];
+                    let options = {
+                        root: null, // Use the viewport as the root
+                        rootMargin: '0px', // No margin around the viewport
+                        threshold: 0.6 // Trigger when at least half of the element is visible
+                    };
+        
+                    let callback = (entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting & comment_pages_info.has_next) {
+                            observer.unobserve(entry.target);
+                            ViewComments(page = comment_pages_info.current + 1)
+                        }
+                    });
+                    };
+        
+                    let observer_comments = new IntersectionObserver(callback, options);
+                    observer_comments.observe(target);
+                }
+                catch (error) {
+                    //pass
+                }
+            }
+
+            var buttons = document.getElementsByClassName('reactions-buttons');
+
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].addEventListener('click', async function() {
+                    LikeDislikeStory(this.id);
+                })
+            }
+
+            function LikeDislikeStory(type) {
+                var story_id = document.getElementById('story_id');
+                var user_reader = JSON.parse(sessionStorage.getItem('user'));
+                var likes = document.getElementById('like_story');
+                var dislikes = document.getElementById('dislike_story');
+
+                var url = `${MAINURL}/react_story`;
+                
+                if (user_reader) {
+                    fetch(url, {
+                        method: "POST",
+                        headers:{
+                            'Content-Type':'application/json',
+                            'X-CSRFToken': token.value,
+                        },
+                        body: JSON.stringify({'story': story_id.value, 'type': type, 'reader': user_reader.bound_reader_profile.reader_id}) 
+                    }).then(response => {
+                        return response.json();
+                    }).then(response => {
+                        if (response.success) {
+                            likes.innerHTML = `Likes: ${response.reactions.likes}`;
+                            dislikes.innerHTML = `Dislikes: ${response.reactions.dislikes}`;
+                        } else {
+                            likes.innerHTML = `Likes: ${response.reactions.likes}`;
+                            dislikes.innerHTML = `Dislikes: ${response.reactions.dislikes}`;
+                            buildModal(response.reason);
+                        }
+                    })
+                    return
+                } else {
+                    buildModal("You must log in in order to like stories");
+                }
+            }
+        </script>
+    {% endblock %}
+
+    
+</body>
+
+
+
+</html>

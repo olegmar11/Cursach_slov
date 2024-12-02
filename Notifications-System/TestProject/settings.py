@@ -15,7 +15,8 @@ import os
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+#BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/api/media/'
@@ -27,7 +28,7 @@ MEDIA_URL = '/api/media/'
 SECRET_KEY = 'django-insecure-he-==hmb=qmcpnfh#b9w(+@g6t5pzues$5-b_8sa3&1l0k7vv3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'notifications-system.fly.dev',
@@ -44,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'TestingApplication',
+    # 'TestingApplication',
     'django_crontab',
     'corsheaders',
     'Comments',
@@ -104,7 +105,7 @@ WSGI_APPLICATION = 'TestProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -150,17 +151,17 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
+# REST_FRAMEWORK = {
+#     # 'DEFAULT_PERMISSION_CLASSES': (
+#     #     'rest_framework.permissions.IsAuthenticated',
+#     # ),
+#     # 'DEFAULT_AUTHENTICATION_CLASSES': (
+#     #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     # ),
+# }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
@@ -173,6 +174,7 @@ SIMPLE_JWT = {
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
     'https://course-front.fly.dev',
+    'https://notifications-system.fly.dev'
 ]
 
 SESSION_COOKIE_AGE = 2_629_744 # seconds

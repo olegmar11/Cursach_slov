@@ -1,24 +1,24 @@
 import {
-  Avatar,
-  Button,
-  Container,
-  Group,
-  Image,
-  Menu,
-  rem,
-  Select,
-  SelectProps,
-  Text,
-  UnstyledButton,
+    Avatar,
+    Button,
+    Container,
+    Group,
+    Image,
+    Menu,
+    rem,
+    Select,
+    SelectProps,
+    Text,
+    UnstyledButton,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import {
-  IconChevronDown,
-  IconFilePlus,
-  IconLogout,
-  IconNotes,
-  IconSettings,
-  IconUser,
+    IconChevronDown,
+    IconFilePlus,
+    IconLogout,
+    IconNotes,
+    IconSettings,
+    IconUser,
 } from '@tabler/icons-react';
 import cx from 'clsx';
 import { ReactNode, useMemo, useState } from 'react';
@@ -49,6 +49,12 @@ const Header = () => {
   const [userMenuOpened, setUserMenuOpened] = useState(false);
   const { user, logout } = useUserStore();
   const { t, i18n } = useTranslation();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh');
+    logout();
+  }
 
   const openLoginModal = () => {
     modals.open({
@@ -182,7 +188,7 @@ const Header = () => {
               leftSection={
                 <IconLogout color="red" style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
               }
-              onClick={logout}
+              onClick={handleLogout}
               c="red"
             >
               <Text size="sm">{t('headerLogout')}</Text>

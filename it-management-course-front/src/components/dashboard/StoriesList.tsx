@@ -31,9 +31,9 @@ const StoriesList = () => {
 
   const fetchStories = () => {
     getStories({
-      ...(genres.size > 0 && { genres: [...genres].join(',') }),
+      ...(genres.size > 0 && { genres: [...genres].map((g) => `${g},`).join('') }),
       ...(search && { search_prompt: search }),
-      ...(tags.size > 0 && { tags: [...tags].join(',') }),
+      ...(tags.size > 0 && { tags: [...tags].map((t) => `${t},`).join('') }),
       ...(pagination && { page: `${page}` }),
       sort_by: `${sortType}${serializedSortBy[sortBy]}`,
     })

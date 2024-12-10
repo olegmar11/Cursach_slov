@@ -34,7 +34,7 @@ class CommentSerializer(serializers.ModelSerializer):
         
         if request.user.is_authenticated:
             base_user = BaseUserProfile.objects.get(user = request.user)
-            return base_user in obj.likes.all()
+            return obj.likes.filter(pk=base_user.id).exists()
         else:
             return False
     
@@ -43,7 +43,7 @@ class CommentSerializer(serializers.ModelSerializer):
         
         if request.user.is_authenticated:
             base_user = BaseUserProfile.objects.get(user = request.user)
-            return base_user in obj.dislikes.all()
+            return obj.dislikes.filter(pk=base_user.id).exists()
         else:
             return False
         

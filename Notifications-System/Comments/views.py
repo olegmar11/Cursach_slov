@@ -11,6 +11,7 @@ from .serializers import CommentSerializer
 #Fetch comments or replies for comment
 class GetComments(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication,)
     
     def get(self, request):
         comment_id = request.GET.get('parent_comment_id', None)
@@ -131,7 +132,7 @@ class CreateComments(APIView):
                 create_notification.save()
 
             story.save()   
-            return Response({"success": True, "data": CommentSerializer(get_comment, context={'request': request}).data, "message": "comment created successfully"})
+            return Response({"success": True, "data": CommentSerializer(comment, context={'request': request}).data, "message": "comment created successfully"})
         
 
     def delete(self, request):
@@ -163,7 +164,7 @@ class LikeUnlikeComment(APIView):
         comment_id = data.get('comment_id', None)
         submission_type = data.get('type', None)
         base_user = BaseUserProfile.objects.get(user = request.user)
-    
+        
         if comment_id == None or submission_type == None:
             return Response({"success": False, "data": {}, "message": "request body missing comment_id or type (type should be 'like' or 'dislike')"})
         
@@ -175,21 +176,27 @@ class LikeUnlikeComment(APIView):
         if submission_type == 'like':
             if base_user in get_comment.dislikes.all():
                 get_comment.dislikes.remove(base_user)
+                msg = "Comment dislike removed."
                 
             if base_user in get_comment.likes.all():
                 get_comment.likes.remove(base_user)
+                msg = "Comment like removed."
             else:
                 get_comment.likes.add(base_user)
+                msg = "Comment like added."
         elif submission_type == 'dislike':
             if base_user in get_comment.likes.all():
                 get_comment.likes.remove(base_user)
+                msg = "Comment like removed."
                 
             if base_user in get_comment.dislikes.all():
                 get_comment.dislikes.remove(base_user)
+                msg = "Comment dislike removed."
             else:
-                get_comment.dislikes.add(base_user) 
+                get_comment.dislikes.add(base_user)
+                msg = "Comment dislike added."
         else:
             return Response({"success": False, "data": {}, "message": "Invalid type (type should be 'like' or 'dislike')"})
 
         get_comment.save()
-        return Response({"success": True, "data": CommentSerializer(get_comment, context={'request': request}).data, "message": ""})
+        return Response({"success": True, "data": CommentSerializer(get_comment, context={'request': request}).data, "message": msg})

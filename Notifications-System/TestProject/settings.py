@@ -31,6 +31,7 @@ SECRET_KEY = 'django-insecure-he-==hmb=qmcpnfh#b9w(+@g6t5pzues$5-b_8sa3&1l0k7vv3
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     'notifications-system.fly.dev',
     'course-front.fly.dev',
 ]
@@ -72,11 +73,12 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:8000',
     'https://notifications-system.fly.dev',
     'https://course-front.fly.dev',
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://notifications-system.fly.dev','https://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://notifications-system.fly.dev','https://127.0.0.1']
 
 ROOT_URLCONF = 'TestProject.urls'
 

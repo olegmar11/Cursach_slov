@@ -20,6 +20,7 @@ from django.db.models import Value
 #Fetch all stories there is (plus search)
 class GetAllStories(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication,)
     
     def get(self, request):
         req_page = int(request.GET.get('page', 1))
@@ -435,6 +436,7 @@ class ReactToStory(APIView):
         if react_type == 'like':  
             if user in story.dislikes.all():
                 story.dislikes.remove(user)
+                msg = "Story dislike removed."
                 
             if user in story.likes.all():
                 story.likes.remove(user)
@@ -445,6 +447,7 @@ class ReactToStory(APIView):
         elif react_type == 'dislike':
             if user in story.likes.all():
                 story.likes.remove(user)
+                msg = "Story like removed."
             
             if user in story.dislikes.all():
                 story.dislikes.remove(user)

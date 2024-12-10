@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import StoriesSerializer, GenreSerializer, TagSerializer, AllStorySerializer
 from .permissions import IsAuthenticatedWriter
+from django.db import IntegrityError
 from functools import reduce
 import operator
 from django.utils import timezone
@@ -120,9 +121,11 @@ class ManipulateStory(APIView):
             genre = PostGenre.objects.get(genre = genre)
         except PostGenre.DoesNotExist:
             return Response({"success": False, "data": {}, "message": f"genre with genre={genre} does not exist"}) 
-        
-        create_story = Post(creator_id = user.writer, post_title = title, post_text = body, genre=genre)
-        create_story.save()
+        try:
+            create_story = Post(creator_id = user.writer, post_title = title, post_text = body, genre=genre)
+            create_story.save()
+        except IntegrityError:
+            return Response({"success": False, "data": {}, "message": f"story with that title already exists"}) 
         
         if descr:
             create_story.post_description = descr

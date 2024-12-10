@@ -2,7 +2,7 @@ import { Button, Card, Container, Grid, Group, Image, Stack, Text, Textarea } fr
 import { IconEye, IconPencil } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getStaticFile } from '../../api/api';
 import { createComment, getComments } from '../../api/comments';
 import { getStory, reactToStory, StoryResponse } from '../../api/stories';
@@ -15,14 +15,13 @@ import { useUserStore } from '../../zustand/userStore';
 
 export interface StoryInfo {
   story: StoryResponse | null;
-  comments: IComment[]; // TODO: Replace with comments type later
+  comments: IComment[];
 }
 
 const Story = () => {
   const { t } = useTranslation();
   const { storyId } = useParams();
   const { user } = useUserStore();
-  const navigate = useNavigate();
   const [storyData, setStoryData] = useState<StoryInfo>({
     story: null,
     comments: [],
@@ -30,12 +29,6 @@ const Story = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentBody, setCommentBody] = useState('');
-
-  useEffect(() => {
-    if (!user) {
-      navigate('/');
-    }
-  }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,7 +64,7 @@ const Story = () => {
 
   const handleReactToStory = (type: 'like' | 'dislike') => {
     reactToStory(storyId || '', type)
-      .then(res => {
+      .then((res) => {
         setStoryData(
           prev =>
             ({
@@ -79,6 +72,8 @@ const Story = () => {
               story: {
                 ...prev.story,
                 story: res?.data,
+                liked: type === 'like' ? !prev.story?.liked : false,
+                disliked: type === 'dislike' ? !prev.story?.disliked : false,
               },
             } as StoryInfo)
         );

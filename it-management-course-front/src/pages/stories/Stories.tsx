@@ -35,7 +35,7 @@ const Stories: FC = () => {
           break;
       }
     });
-  }, []);
+  }, [searchParams]);
 
   return (
     <Stack

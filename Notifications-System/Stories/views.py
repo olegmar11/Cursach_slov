@@ -135,14 +135,18 @@ class ManipulateStory(APIView):
         
         if tags:
             all_tags = tags.split(',')[:-1]
+            tags_to_add = []
             for tag in all_tags:
                 try:
                     get_tag = PostTags.objects.get(tag = tag)
                 except PostTags.DoesNotExist:
                     get_tag = PostTags(tag = tag)
                 
-                create_story.tags.add(get_tag)
+                tags_to_add.append(get_tag)
                 
+                
+        create_story.save()
+        create_story.tags.add(*tags_to_add)
         create_story.save()
         
         return Response({"success": True, "data": StoriesSerializer(create_story).data, "message": "story created successfully"})
@@ -357,6 +361,7 @@ class GetViewHistory(APIView):
 #Fetch distinct story
 class GetSingleStory(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication, )
     
     def get(self, request):
         data = request.GET

@@ -53,7 +53,7 @@ const Story = () => {
     };
 
     fetchData();
-  }, [storyId]);
+  }, [storyId, user]);
 
   const handleChangeComments = (newComment: IComment) => {
     setStoryData(prev => ({
@@ -153,14 +153,16 @@ const Story = () => {
                           variant="like"
                           value={storyData.story?.story?.likes_count}
                           isFilled={storyData.story?.liked}
-                          onClick={() => handleReactToStory('like')}
+                          isAuthor={storyData.story?.owner}
+                          {...(!storyData.story?.owner && { onClick: () => handleReactToStory('like') })}
                         />
 
                         <ReactionButton
                           variant="dislike"
                           value={storyData.story?.story?.dislikes_count}
                           isFilled={storyData.story?.disliked}
-                          onClick={() => handleReactToStory('dislike')}
+                          isAuthor={storyData.story?.owner}
+                          {...(!storyData.story?.owner && { onClick: () => handleReactToStory('dislike') })}
                         />
 
                         <Group gap={8}>
@@ -222,7 +224,8 @@ const Story = () => {
               {t('storyComments')}
             </Text>
 
-            <Group align="start">
+            {user && (
+                <Group align="start">
               <Image
                 w={48}
                 h={48}
@@ -247,6 +250,7 @@ const Story = () => {
                 </Button>
               </Stack>
             </Group>
+            )}
 
             {storyData.comments.map(comment => (
               <Comment key={comment.id} comment={comment} setComments={handleChangeComments} />

@@ -151,7 +151,8 @@ const Comment: FC<CommentProps> = ({ comment, setComments, showReplies = true })
                 />
               ))}
 
-            <Group align="start">
+            {user && (
+                <Group align="start">
               <Image
                 w={48}
                 h={48}
@@ -176,6 +177,7 @@ const Comment: FC<CommentProps> = ({ comment, setComments, showReplies = true })
                 </Button>
               </Stack>
             </Group>
+            )}
           </Stack>
         </Box>
       )}

@@ -1,13 +1,13 @@
 import {
-  Button,
-  Container,
-  FileButton,
-  Grid,
-  Group,
-  Image,
-  Stack,
-  Text,
-  TextInput,
+    Button,
+    Container,
+    FileButton,
+    Grid,
+    Group,
+    Image,
+    Stack,
+    Text,
+    TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
@@ -60,6 +60,7 @@ const EditStory = () => {
       genre: null,
       image: null,
       tags: new Set(),
+      customTags: new Set(),
     },
 
     validate: {
@@ -134,7 +135,17 @@ const EditStory = () => {
     setIsImageModalOpened(true);
   };
 
-  const addTag = (tag: ITag) => {
+  const addTag = (tag: ITag | string) => {
+    if (typeof tag === 'string') {
+        form.setFieldValue('customTags', prev => {
+            const tags = new Set(prev);
+            tags.add(tag);
+            return tags;
+        });
+
+        return;
+    }
+
     form.setFieldValue('tags', prev => {
       const tags = new Set(prev);
       tags.add(tag);
@@ -142,9 +153,20 @@ const EditStory = () => {
     });
   };
 
-  const removeTag = (tag: ITag) => {
+  const removeTag = (tag: ITag | string) => {
+    if (typeof tag === 'string') {
+        form.setFieldValue('customTags', prev => {
+            const tags = new Set(prev);
+            tags.delete(tag);
+            return tags;
+        });
+        
+        return;
+    }
+
     form.setFieldValue('tags', prev => {
-      const tags = new Set([...prev].filter(t => t.id !== tag.id));
+      const tags = new Set(prev);
+      tags.delete(tag);
       return tags;
     });
   };
@@ -154,10 +176,11 @@ const EditStory = () => {
 
     formData.append('story_id', storyId || '');
     formData.append('title', values.title);
+    formData.append('description', values.description);
     formData.append('body', values.body);
     formData.append(
       'tags',
-      Array.from(values.tags).reduce((acc, curr) => `${acc}${curr.tag},`, '')
+      [...Array.from(values.tags), ...Array.from(values.customTags).map(t => ({ tag: t }))].reduce((acc, curr) => `${acc}${curr.tag},`, '')
     );
     formData.append('genre', values.genre?.genre || '');
 
@@ -201,7 +224,7 @@ const EditStory = () => {
           <LoadingSpinner size={48} />
         </Stack>
       ) : (
-        <form onSubmit={form.onSubmit(handleSubmit)}>
+        <form>
           <Stack>
             <Text size="32px" fw="bold">
               {t('editStoryPageTitle')}
@@ -262,9 +285,10 @@ const EditStory = () => {
                   <TagsSelector
                     addTag={addTag}
                     removeTag={removeTag}
-                    tagsSelectedIds={form.getValues().tags}
+                    tagsSelected={form.getValues().tags}
                     tags={tags}
                     disabled={isSubmitting}
+                    customTags={form.getValues().customTags}
                   />
                 </Stack>
               </Grid.Col>
@@ -296,7 +320,7 @@ const EditStory = () => {
             </MantineRichTextEditor>
 
             <Group>
-              <Button flex={1} loading={isSubmitting} type="submit" color="green">
+              <Button flex={1} loading={isSubmitting} onClick={() => handleSubmit(form.getValues())} color="green">
                 {t('createStorySave')}
               </Button>
 

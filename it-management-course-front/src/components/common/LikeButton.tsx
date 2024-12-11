@@ -8,23 +8,24 @@ interface LikeButtonProps {
   variant: 'like' | 'dislike';
   value?: number;
   isFilled?: boolean;
+  isAuthor?: boolean;
   onClick?: () => void;
 }
 
-const ReactionButton: FC<LikeButtonProps> = ({ value, isFilled, onClick, variant }) => {
+const ReactionButton: FC<LikeButtonProps> = ({ value, isFilled, onClick, variant, isAuthor }) => {
   return (
     <Group gap={8} onClick={onClick}>
       <Text>{value}</Text>
 
       {variant === 'like' ? (
         <IconThumbUp
-          className={likeStyles.like}
+          className={`${likeStyles.like} ${isAuthor ? likeStyles.author : ''}`}
           fill={isFilled ? '#31c40c' : 'none'}
           color="#31c40c"
         />
       ) : (
         <IconThumbDown
-          className={likeStyles.dislike}
+          className={`${likeStyles.dislike} ${isAuthor ? likeStyles.author : ''}`}
           fill={isFilled ? 'red' : 'none'}
           color="red"
         />

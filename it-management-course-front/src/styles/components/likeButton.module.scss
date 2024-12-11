@@ -1,15 +1,31 @@
 .like {
     cursor: pointer;
 
+    &.author {
+        cursor: auto;
+    }
+
     &:hover {
         fill: #31c40c;
+
+        &.author {
+            fill: none;
+        }
     }
 }
 
 .dislike {
     cursor: pointer;
 
+    &.author {
+        cursor: auto;
+    }
+
     &:hover {
         fill: red;
+
+        &.author {
+            fill: none;
+        }
     }
 }

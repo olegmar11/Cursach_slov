@@ -1,13 +1,13 @@
 import {
-  Button,
-  Container,
-  FileButton,
-  Grid,
-  Group,
-  Image,
-  Stack,
-  Text,
-  TextInput,
+    Button,
+    Container,
+    FileButton,
+    Grid,
+    Group,
+    Image,
+    Stack,
+    Text,
+    TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
@@ -28,10 +28,10 @@ import { useUserStore } from '../../zustand/userStore';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
+import { useTranslation } from 'react-i18next';
 import { createStory } from '../../api/stories';
 import { fetchTags } from '../../api/tags';
 import '../../styles/components/richProviderStylles.scss';
-import { useTranslation } from 'react-i18next';
 
 export interface StoryFormData {
   title: string;
@@ -40,6 +40,7 @@ export interface StoryFormData {
   tags: Set<ITag>;
   body: string;
   image: File | null;
+  customTags: Set<string>
 }
 
 const CreateNewStory = () => {
@@ -62,6 +63,7 @@ const CreateNewStory = () => {
       genre: null,
       image: null,
       tags: new Set(),
+      customTags: new Set(),
     },
 
     validate: {
@@ -122,7 +124,17 @@ const CreateNewStory = () => {
     setIsImageModalOpened(true);
   };
 
-  const addTag = (tag: ITag) => {
+  const addTag = (tag: ITag | string) => {
+    if (typeof tag === 'string') {
+        form.setFieldValue('customTags', prev => {
+            const tags = new Set(prev);
+            tags.add(tag);
+            return tags;
+        });
+
+        return;
+    }
+
     form.setFieldValue('tags', prev => {
       const tags = new Set(prev);
       tags.add(tag);
@@ -130,7 +142,17 @@ const CreateNewStory = () => {
     });
   };
 
-  const removeTag = (tag: ITag) => {
+  const removeTag = (tag: ITag | string) => {
+    if (typeof tag === 'string') {
+        form.setFieldValue('customTags', prev => {
+            const tags = new Set(prev);
+            tags.delete(tag);
+            return tags;
+        });
+        
+        return;
+    }
+
     form.setFieldValue('tags', prev => {
       const tags = new Set(prev);
       tags.delete(tag);
@@ -146,7 +168,7 @@ const CreateNewStory = () => {
     formData.append('body', values.body);
     formData.append(
       'tags',
-      Array.from(values.tags).reduce((acc, curr) => `${acc}${curr.tag},`, '')
+      [...Array.from(values.tags), ...Array.from(values.customTags).map(t => ({ tag: t }))].reduce((acc, curr) => `${acc}${curr.tag},`, '')
     );
     formData.append('genre', values.genre?.genre || '');
 
@@ -243,9 +265,10 @@ const CreateNewStory = () => {
                   <TagsSelector
                     addTag={addTag}
                     removeTag={removeTag}
-                    tagsSelectedIds={form.getValues().tags}
+                    tagsSelected={form.getValues().tags}
                     tags={tags}
                     disabled={isSubmitting}
+                    customTags={form.getValues().customTags}
                   />
                 </Stack>
               </Grid.Col>

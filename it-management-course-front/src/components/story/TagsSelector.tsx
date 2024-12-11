@@ -1,39 +1,35 @@
 import { Group, Select, Stack } from '@mantine/core';
 import { FC, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ITag } from '../../types/tag';
 import { getRandomBadgeColor } from '../../utils/colors';
 import BadgeX from '../common/BadgeX';
-import { useTranslation } from 'react-i18next';
 
 interface TagsSelectorProps {
-  tagsSelectedIds: Set<ITag>;
-  addTag: (tag: ITag) => void;
-  removeTag: (tag: ITag) => void;
+  tagsSelected: Set<ITag>;
+  addTag: (tag: ITag | string) => void;
+  removeTag: (tag: ITag | string) => void;
   tags: ITag[];
   disabled?: boolean;
+  customTags: Set<string>;
 }
 
 const TagsSelector: FC<TagsSelectorProps> = ({
   addTag,
   removeTag,
-  tagsSelectedIds,
+  tagsSelected,
   tags,
   disabled,
+  customTags
 }) => {
   const { t } = useTranslation();
   const [value, setValue] = useState('');
 
   const tagsOptions = useMemo(() => {
-    const set = new Set<number>([...tagsSelectedIds].map(t => t.id));
+    const set = new Set<number>([...tagsSelected].map(t => t.id));
 
     return tags.filter(tag => !set.has(tag.id));
-  }, [tagsSelectedIds, tags]);
-
-  const tagsSelected = useMemo(() => {
-    const set = new Set<number>([...tagsSelectedIds].map(t => t.id));
-
-    return tags.filter(tag => set.has(tag.id));
-  }, [tagsSelectedIds, tags]);
+  }, [tagsSelected, tags]);
 
   return (
     <Stack>
@@ -54,6 +50,20 @@ const TagsSelector: FC<TagsSelectorProps> = ({
         onDropdownClose={() => {
           setValue('');
         }}
+        onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            event.stopPropagation();
+
+            if (event.key === 'Enter') {
+                const tag = tagsOptions.find(tag => tag.tag === value)
+
+                if (tag) {
+                  addTag(tag);
+                } else if (!tag && value.length > 0) {
+                  addTag(value);
+                }
+                setValue('');
+            }
+        }}
         limit={6}
       />
 
@@ -63,6 +73,15 @@ const TagsSelector: FC<TagsSelectorProps> = ({
             key={tag.id}
             tag={tag}
             color={getRandomBadgeColor(tag.id)}
+            onClick={() => removeTag(tag)}
+          />
+        ))}
+
+        {[...customTags.values()].map((tag, index) => (
+          <BadgeX
+            key={tag}
+            tag={tag}
+            color={getRandomBadgeColor(index)}
             onClick={() => removeTag(tag)}
           />
         ))}

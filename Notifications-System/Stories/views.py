@@ -141,7 +141,8 @@ class ManipulateStory(APIView):
                     get_tag = PostTags.objects.get(tag = tag)
                 except PostTags.DoesNotExist:
                     get_tag = PostTags(tag = tag)
-                
+                    get_tag.save()
+                    
                 tags_to_add.append(get_tag)
                 
                 
@@ -216,8 +217,8 @@ class ManipulateStory(APIView):
                 
                 all_tags_query.append(get_tag)
                 
-            for tag in all_tags_query:
-                story.tags.add(tag)
+
+            story.tags.add(*all_tags_query)
 
         story.save()
         return Response({"success": True, "data": StoriesSerializer(story).data, "message": "Story updated successfully. " + msg})

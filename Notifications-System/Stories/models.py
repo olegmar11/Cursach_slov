@@ -23,7 +23,7 @@ class Post(models.Model):
     creator_id = models.ForeignKey(UserProfileWriter, on_delete=models.CASCADE)
     
     post_image = models.ImageField(upload_to ='story_fis/', default='story_fis/default_story.jpeg')
-    post_title = models.CharField(max_length = 50, default="No Name") #TODO add 'unique' constraint
+    post_title = models.CharField(max_length = 50, unique=True, default="No Name")
     post_text = models.TextField(null = False)
     post_description = models.CharField(max_length=100, default="No Description")
     

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { getStaticFile } from '../api/api';
 import HomeCategoryLink from '../components/common/HomeCategoryLink';
 import { useUserStore } from '../zustand/userStore';
+import { Link } from 'react-router-dom';
+import classes from '../styles/components/homeLink.module.scss';
 
 const Home = () => {
   const { user } = useUserStore();
@@ -18,9 +20,11 @@ const Home = () => {
         </Text>
 
         {!user ? (
-          <Text size="xl" fw="lighter" ta="center">
-            {t('homeLogin')}
-          </Text>
+          <Link to="/stories" className={classes.link}>
+            <Text size="xl" fw="lighter" ta="center">
+              {t('homeLogin')}
+            </Text>
+          </Link>
         ) : (
           <Group w="100%">
             <HomeCategoryLink
